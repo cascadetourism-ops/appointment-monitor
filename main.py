@@ -14,11 +14,25 @@ TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "8969681995:AAHZDtwH1n
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "1655607685")
 MONITOR_WINDOW_DAYS = 700
 
-def send_telegram_alert(message_text):
+def send_telegram_alert(location_name, slot_date_str, slot_time_str="10:15", visa_type="B1/B2"):
     """
-    Dispatches an instant notification message to your Telegram account.
+    Dispatches a structured instant notification message to your Telegram account
+    matching your required custom format.
     """
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+    
+    # Generate current timestamp matching format: 2026-08-12T13:50:18+04:00
+    current_timestamp = datetime.now().astimezone().isoformat(timespec='seconds')
+    
+    message_text = (
+        f"🚨 USA visa appointment detected\n"
+        f"📍 {location_name}\n"
+        f"📅 {slot_date_str}\n"
+        f"🛂 {visa_type}\n"
+        f"⏰ {slot_time_str}\n"
+        f"🔎 Detected: {current_timestamp}"
+    )
+
     payload = {
         "chat_id": TELEGRAM_CHAT_ID,
         "text": message_text,
@@ -50,13 +64,22 @@ def check_location_slots(location_name, facility_id, headers, cookies):
         # response = requests.post(target_url, headers=headers, cookies=cookies, data=payload, timeout=15)
         # data = response.json()
         # earliest_date_str = data.get("earliest_date")  # e.g., "2027-07-20"
+        # appointment_time = data.get("earliest_time", "10:15")
+        # visa_category = data.get("visa_class", "B1/B2")
         
         # FOR DEMONSTRATION / MOCKING REAL RESULTS:
-        # Simulating that Dubai returned "2027-07-20" and Abu Dhabi returned None
         if location_name == "Dubai":
-            earliest_date_str = "2027-07-20" 
+            earliest_date_str = "2026-08-27"
+            appointment_time = "10:15"
+            visa_category = "B1/B2"
+        elif location_name == "Abu Dhabi":
+            earliest_date_str = "2026-09-03"
+            appointment_time = "07:30"
+            visa_category = "B1/B2"
         else:
             earliest_date_str = None
+            appointment_time = "10:15"
+            visa_category = "B1/B2"
         
         if earliest_date_str:
             slot_date = datetime.strptime(earliest_date_str, "%Y-%m-%d")
@@ -66,7 +89,12 @@ def check_location_slots(location_name, facility_id, headers, cookies):
 
             # Check if the found slot falls within your 700-day window
             if slot_date <= max_allowed_date:
-                send_telegram_alert(f"🇦🇪 *{location_name} Visa Slot Found!*\nAn open slot is available on: *{earliest_date_str}*")
+                send_telegram_alert(
+                    location_name=location_name,
+                    slot_date_str=earliest_date_str,
+                    slot_time_str=appointment_time,
+                    visa_type=visa_category
+                )
             else:
                 print(f"{location_name}: Slot found on {earliest_date_str}, but it exceeds your {MONITOR_WINDOW_DAYS}-day window.")
         else:
