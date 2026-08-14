@@ -36,7 +36,7 @@ def send_telegram_alert(message_text):
 
 def monitor_appointment_dates():
     # Target URL Endpoint from your US Visa Scheduling session profile
-    target_url = "https://usvisascheduling.com"
+    target_url = "https://www.usvisascheduling.com"
     
     # Exact raw browser headers from your session intercept
     headers = {
