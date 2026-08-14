@@ -61,8 +61,11 @@ def check_location_slots(location_name, facility_id, headers, cookies):
         # total_slots = data.get("slot_count", 0)       # e.g., number of available slots
         
         # FOR DEMONSTRATION / MOCKING REAL RESULTS:
+        # Automatically pull live dynamic calendar dates instead of hardcoded strings
+        today = datetime.now()
         if location_name == "Dubai":
-            earliest_date_str = "2026-08-27"
+            # Dynamically set to 13 days from the current calendar date
+            earliest_date_str = (today + timedelta(days=13)).strftime("%Y-%m-%d")
             total_slots = 3
         else:
             # Simulating no slots found for other locations (e.g., Abu Dhabi)
