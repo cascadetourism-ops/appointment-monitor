@@ -36,31 +36,39 @@ def send_telegram_alert(message_text):
 def check_location_slots(location_name, facility_id, headers, cookies):
     """
     Queries a specific consular location using your active account session cookies 
-    by updating the facility parameter.
+    by updating the facility parameter and parsing the returned dates.
     """
     target_url = "https://usvisascheduling.com"
     
     try:
         print(f"[{datetime.now()}] Checking slots for: {location_name} (Facility ID: {facility_id})...")
         
-        # NOTE: When making live calls, you might pass the facility_id as a parameter or payload data, e.g.:
+        # NOTE: When making live calls, uncomment below and adjust payload/parameters as needed:
         # payload = {"facility_id": facility_id}
         # response = requests.post(target_url, headers=headers, cookies=cookies, data=payload, timeout=15)
         # data = response.json()
         # earliest_date_str = data.get("earliest_date")
         
-        earliest_date_str = None  # Placeholder for parsed data response
+        # -----------------------------------------------------------------
+        # PARSED DATA EXTRACTION
+        # Replace the simulation string below with your actual API response variable 
+        # e.g., earliest_date_str = data.get("earliest_date")
+        # -----------------------------------------------------------------
+        earliest_date_str = None  # Change to parsed data string when live
         
         if earliest_date_str:
             slot_date = datetime.strptime(earliest_date_str, "%Y-%m-%d")
             max_allowed_date = datetime.now() + timedelta(days=MONITOR_WINDOW_DAYS)
             
+            print(f"Found slot date: {slot_date.strftime('%Y-%m-%d')} (Max allowed: {max_allowed_date.strftime('%Y-%m-%d')})")
+
+            # Check if the found slot is within your 700-day window
             if slot_date <= max_allowed_date:
                 send_telegram_alert(f"🇦🇪 *{location_name} Visa Slot Found!*\nAn open slot is available on: *{earliest_date_str}*")
             else:
                 print(f"{location_name}: Slot found on {earliest_date_str}, but it exceeds your {MONITOR_WINDOW_DAYS}-day window.")
         else:
-            print(f"No slots returned for {location_name}.")
+            print(f"No valid appointment slots returned for {location_name}.")
             
     except Exception as err:
         print(f"Error checking {location_name}: {err}")
