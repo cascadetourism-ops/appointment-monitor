@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 app = Flask(__name__)
 
 # -------------------------------------------------------------------------
-# CONFIGURATION SETTINGS
+# CONFIGURATION SETTINGS (WINDOW DAYS = 700)
 # -------------------------------------------------------------------------
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "8969681995:AAHZDtwH1nB5ywnLdC2IYL9nu_VlTr0h9YY")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "1655607685")
@@ -35,8 +35,8 @@ def send_telegram_alert(message_text):
 
 def check_location_slots(location_name, facility_id, headers, cookies):
     """
-    Queries a specific consular location using active session cookies 
-    and parses the live response to evaluate available appointment windows.
+    Queries a specific consular location and evaluates the returned appointment date 
+    against the 700-day window threshold.
     """
     target_url = "https://usvisascheduling.com"
     
@@ -45,24 +45,24 @@ def check_location_slots(location_name, facility_id, headers, cookies):
         
         # -----------------------------------------------------------------
         # LIVE API REQUEST IMPLEMENTATION
-        # Uncomment below when routing live requests with active session cookies
         # -----------------------------------------------------------------
         # payload = {"facility_id": facility_id}
         # response = requests.post(target_url, headers=headers, cookies=cookies, data=payload, timeout=15)
         # data = response.json()
+        # earliest_date_str = data.get("earliest_date")  # e.g., "2027-07-20"
         
-        # Extract the date string from the JSON response dictionary 
-        # (Update key name e.g., "earliest_date" or "date" based on exact API response format)
-        # earliest_date_str = data.get("earliest_date")
-        
-        # Currently set to None. Change or parse dynamically from your live `data` response object:
-        earliest_date_str = None 
+        # FOR DEMONSTRATION / MOCKING REAL RESULTS:
+        # Simulating that Dubai returned "2027-07-20" and Abu Dhabi returned None
+        if location_name == "Dubai":
+            earliest_date_str = "2027-07-20" 
+        else:
+            earliest_date_str = None
         
         if earliest_date_str:
             slot_date = datetime.strptime(earliest_date_str, "%Y-%m-%d")
             max_allowed_date = datetime.now() + timedelta(days=MONITOR_WINDOW_DAYS)
             
-            print(f"Found slot: {slot_date.strftime('%Y-%m-%d')} | Max window threshold: {max_allowed_date.strftime('%Y-%m-%d')}")
+            print(f"[{location_name}] Found slot: {slot_date.strftime('%Y-%m-%d')} | Max window threshold: {max_allowed_date.strftime('%Y-%m-%d')}")
 
             # Check if the found slot falls within your 700-day window
             if slot_date <= max_allowed_date:
@@ -77,7 +77,7 @@ def check_location_slots(location_name, facility_id, headers, cookies):
 
 def monitor_appointment_dates():
     """
-    Iterates through both Abu Dhabi and Dubai using the shared session credentials.
+    Iterates through both Abu Dhabi and Dubai using shared session credentials.
     """
     headers = {
         'accept': 'application/json, text/javascript, */*; q=0.01',
@@ -88,13 +88,11 @@ def monitor_appointment_dates():
         'x-requested-with': 'XMLHttpRequest'
     }
 
-    # Your single set of authenticated session cookies obtained from browser inspection
     shared_session_cookies = {
         '__cf_bm': 'ofsN8sEXk3HCOLTsHwjCCc8fujRRbeDI4iC_LBuiu0U-1786711693.180439-1.0.1.1-LQgv0MLw.Ldp_KQ2.fNF4xI75SADuVdvvKMRDl65BMbsAFMcz5nVQTUct17kEoNrQPkHy5VsQiI13V3m9E6fJnYUIX4jSrx1pkfpSkA3tiknYTCbKPLVFpwmJss7JVuV',
         '.AspNet.ApplicationCookie': 'YOUR_ACTIVE_SESSION_COOKIE_STRING_HERE'
     }
 
-    # Define the locations and their corresponding portal facility identifiers
     locations = [
         {"name": "Abu Dhabi", "facility_id": "abu_dhabi_code_here"},
         {"name": "Dubai", "facility_id": "dubai_code_here"}
@@ -107,7 +105,6 @@ def monitor_appointment_dates():
             headers=headers,
             cookies=shared_session_cookies
         )
-        # Brief pause between checking locations to prevent rate-limiting
         time.sleep(3)
 
 def continuous_scheduler():
