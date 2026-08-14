@@ -3,7 +3,7 @@ import time
 import threading
 import requests
 from flask import Flask, jsonify
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 app = Flask(__name__)
 
@@ -14,20 +14,22 @@ TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "8969681995:AAHZDtwH1n
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "1655607685")
 MONITOR_WINDOW_DAYS = 700
 
-def send_telegram_alert(location_name, slot_date_str, slot_time_str="10:15", visa_type="B1/B2"):
+def send_telegram_alert(location_name, slot_date_str, slot_count=1, slot_time_str="10:15", visa_type="B1/B2"):
     """
-    Dispatches a structured instant notification message to your Telegram account
-    matching your required custom format.
+    Dispatches an instant notification message to your Telegram account 
+    only when valid appointment slots are found.
     """
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
     
-    # Generate current timestamp matching format: 2026-08-12T13:50:18+04:00
-    current_timestamp = datetime.now().astimezone().isoformat(timespec='seconds')
+    # Generate explicit UTC+4 timezone offset matching the format (+04:00)
+    uae_tz = timezone(timedelta(hours=4))
+    current_timestamp = datetime.now(uae_tz).isoformat(timespec='seconds')
     
     message_text = (
         f"🚨 USA visa appointment detected\n"
         f"📍 {location_name}\n"
-        f"📅 {slot_date_str}\n"
+        f"📅 Date: {slot_date_str}\n"
+        f"🔢 Slots Available: {slot_count}\n"
         f"🛂 {visa_type}\n"
         f"⏰ {slot_time_str}\n"
         f"🔎 Detected: {current_timestamp}"
@@ -35,9 +37,9 @@ def send_telegram_alert(location_name, slot_date_str, slot_time_str="10:15", vis
 
     payload = {
         "chat_id": TELEGRAM_CHAT_ID,
-        "text": message_text,
-        "parse_mode": "Markdown"
+        "text": message_text
     }
+    
     try:
         response = requests.post(url, json=payload, timeout=10)
         if response.status_code == 200:
@@ -49,8 +51,8 @@ def send_telegram_alert(location_name, slot_date_str, slot_time_str="10:15", vis
 
 def check_location_slots(location_name, facility_id, headers, cookies):
     """
-    Queries a specific consular location and evaluates the returned appointment date 
-    against the 700-day window threshold.
+    Queries a specific consular location and evaluates appointment availability 
+    against the 700-day window threshold. Messages are suppressed if no slots exist.
     """
     target_url = "https://usvisascheduling.com"
     
@@ -63,42 +65,44 @@ def check_location_slots(location_name, facility_id, headers, cookies):
         # payload = {"facility_id": facility_id}
         # response = requests.post(target_url, headers=headers, cookies=cookies, data=payload, timeout=15)
         # data = response.json()
-        # earliest_date_str = data.get("earliest_date")  # e.g., "2027-07-20"
+        # earliest_date_str = data.get("earliest_date")  # e.g., "2026-08-27"
+        # total_slots = data.get("slot_count", 0)       # e.g., number of available slots
         # appointment_time = data.get("earliest_time", "10:15")
         # visa_category = data.get("visa_class", "B1/B2")
         
         # FOR DEMONSTRATION / MOCKING REAL RESULTS:
         if location_name == "Dubai":
             earliest_date_str = "2026-08-27"
+            total_slots = 3
             appointment_time = "10:15"
             visa_category = "B1/B2"
-        elif location_name == "Abu Dhabi":
-            earliest_date_str = "2026-09-03"
-            appointment_time = "07:30"
-            visa_category = "B1/B2"
         else:
+            # Simulating no slots found for other locations (e.g., Abu Dhabi)
             earliest_date_str = None
+            total_slots = 0
             appointment_time = "10:15"
             visa_category = "B1/B2"
         
-        if earliest_date_str:
+        # Guard condition: ensure both a date exists AND the slot count is strictly greater than 0
+        if earliest_date_str and total_slots > 0:
             slot_date = datetime.strptime(earliest_date_str, "%Y-%m-%d")
             max_allowed_date = datetime.now() + timedelta(days=MONITOR_WINDOW_DAYS)
             
-            print(f"[{location_name}] Found slot: {slot_date.strftime('%Y-%m-%d')} | Max window threshold: {max_allowed_date.strftime('%Y-%m-%d')}")
+            print(f"[{location_name}] Found slot: {slot_date.strftime('%Y-%m-%d')} ({total_slots} available) | Max window threshold: {max_allowed_date.strftime('%Y-%m-%d')}")
 
             # Check if the found slot falls within your 700-day window
             if slot_date <= max_allowed_date:
                 send_telegram_alert(
                     location_name=location_name,
                     slot_date_str=earliest_date_str,
+                    slot_count=total_slots,
                     slot_time_str=appointment_time,
                     visa_type=visa_category
                 )
             else:
                 print(f"{location_name}: Slot found on {earliest_date_str}, but it exceeds your {MONITOR_WINDOW_DAYS}-day window.")
         else:
-            print(f"No valid appointment slots returned for {location_name}.")
+            print(f"No valid appointment slots found for {location_name}. Skipping alert.")
             
     except Exception as err:
         print(f"Error checking {location_name}: {err}")
@@ -151,7 +155,7 @@ def home():
         "locations": ["Abu Dhabi", "Dubai"],
         "monitoring_active": True,
         "window_days": MONITOR_WINDOW_DAYS,
-        "timestamp": datetime.utcnow().isoformat() + "Z"
+        "timestamp": datetime.now(timezone(timedelta(hours=4))).isoformat() + "Z"
     })
 
 @app.route('/run-task', methods=['GET', 'POST'])
