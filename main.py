@@ -19,7 +19,6 @@ def send_telegram_alert(message_text):
     """
     Dispatches an instant notification message to your Telegram account.
     """
-    # FIXED: Corrected domain and path format to match Telegram's official Bot API spec
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
     payload = {
         "chat_id": TELEGRAM_CHAT_ID,
@@ -92,7 +91,19 @@ def home():
         "timestamp": datetime.utcnow().isoformat() + "Z"
     })
 
+@app.route('/run-task', methods=['GET', 'POST'])
+def run_task():
+    """
+    Dedicated endpoint for external cron job services to trigger checks.
+    """
+    monitor_appointment_dates()
+    
+    return jsonify({
+        "status": "success",
+        "message": "Appointment scan executed.",
+        "timestamp": datetime.utcnow().isoformat() + "Z"
+    })
+
 if __name__ == '__main__':
-    # FIXED: Added the required app.run statement to serve the Flask app dynamically
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
