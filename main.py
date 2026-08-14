@@ -1,3 +1,4 @@
+```python
 import os
 import sys
 import time
@@ -168,7 +169,7 @@ def check_location_slots(location_name, facility_id, headers):
         logging.info(f"Checking slots for: {location_name} (Facility ID: {facility_id})...")
         
         # -----------------------------------------------------------------
-        # LIVE API REQUEST IMPLEMENTATION (MOCKED TO FIRE WITHIN 120-DAY WINDOW)
+        # LIVE API REQUEST IMPLEMENTATION (MOCKED TO REFLECT REALITY: FAR OUT DATES)
         # -----------------------------------------------------------------
         # target_url = "https://usvisascheduling.com/api/slots"
         # response = requests.post(target_url, headers=headers, cookies=cookies_snapshot, data={"facility_id": facility_id}, timeout=15)
@@ -181,10 +182,9 @@ def check_location_slots(location_name, facility_id, headers):
         #     trip_circuit_breaker(15)
         #     raise Exception("Rate limited (429 Too Many Requests)")
 
-        # Mock results representation (set to 30 days from now so it triggers alert immediately)
+        # Mock results representation (set realistically to mid-2027 so it correctly exceeds short windows)
         if location_name == "Dubai":
-            mock_target_date = datetime.now() + timedelta(days=30)
-            earliest_date_str = mock_target_date.strftime("%Y-%m-%d")
+            earliest_date_str = "2027-07-20"
             total_slots = 3
         else:
             earliest_date_str = None
@@ -206,7 +206,6 @@ def check_location_slots(location_name, facility_id, headers):
             if slot_date <= max_allowed_date:
                 last_sent_date = state["last_alerted_dates"].get(location_name)
                 
-                # Deduplication check: Alert only if new or earlier date
                 if last_sent_date != earliest_date_str:
                     alert_text = f"📍 {location_name}\n📅 Date: {earliest_date_str} ({total_slots} slots)"
                     send_telegram_alert(alert_text)
@@ -244,7 +243,6 @@ def monitor_appointment_dates():
         {"name": "Dubai", "facility_id": "dubai_code_here"}
     ]
 
-    # Concurrent multi-location checks using thread pool executor
     with ThreadPoolExecutor(max_workers=len(locations)) as executor:
         for loc in locations:
             executor.submit(
@@ -326,3 +324,5 @@ if __name__ == '__main__':
     
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
+
+```
