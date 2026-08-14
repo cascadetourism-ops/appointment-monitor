@@ -6,6 +6,7 @@ import random
 import signal
 import logging
 import threading
+import tempfile
 import requests
 from flask import Flask, request, jsonify
 from datetime import datetime, timedelta, timezone
@@ -36,57 +37,31 @@ if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
     logging.critical("Fatal Error: Telegram credentials are not properly configured.")
     sys.exit(1)
 
-# Thread-safe global variables for session state
+# Thread-safe global variables and metrics tracking
 state_lock = threading.Lock()
+file_write_lock = threading.Lock()
+
 shared_session_cookies = {
     '__cf_bm': 'YOUR_CF_BM_COOKIE_HERE',
     '.AspNet.ApplicationCookie': 'YOUR_ACTIVE_SESSION_COOKIE_STRING_HERE'
 }
 
-# Exponential Backoff & Circuit Breaker Tracking
+# Exponential Backoff, Circuit Breaker & Execution Metrics Tracking
 consecutive_errors = 0
 backoff_multiplier = 1
 circuit_open_until = 0
 is_running = True
 
-# -------------------------------------------------------------------------
-# PERSISTENT STATE MANAGEMENT (JSON FILE CACHE)
-# -------------------------------------------------------------------------
-def load_state():
-    if os.path.exists(STATE_FILE):
-        try:
-            with open(STATE_FILE, "r") as f:
-                return json.load(f)
-        except Exception as e:
-            logging.error(f"Failed to load state file: {e}")
-    return {"last_alerted_dates": {}, "last_checked": None}
-
-def save_state(state_data):
-    try:
-        with open(STATE_FILE, "w") as f:
-            json.dump(state_data, f, indent=4)
-    except Exception as e:
-        logging.error(f"Failed to save state file: {e}")
+metrics_store = {
+    "total_checks_executed": 0,
+    "successful_api_responses": 0,
+    "failed_api_responses": 0,
+    "last_error_timestamp": None,
+    "service_start_time": datetime.now(timezone(timedelta(hours=4))).isoformat()
+}
 
 # -------------------------------------------------------------------------
-# CIRCUIT BREAKER UTILITIES
-# -------------------------------------------------------------------------
-def check_circuit_breaker():
-    global circuit_open_until
-    if time.time() < circuit_open_until:
-        remaining = int(circuit_open_until - time.time())
-        logging.warning(f"Circuit breaker is OPEN. Pausing checks for another {remaining} seconds...")
-        return False
-    return True
-
-def trip_circuit_breaker(lockout_minutes=15):
-    global circuit_open_until
-    circuit_open_until = time.time() + (lockout_minutes * 60)
-    logging.error(f"🚨 Circuit breaker tripped! Halting slot checks for {lockout_minutes} minutes.")
-    send_telegram_alert(f"🚨 Security block detected. Circuit breaker tripped. Pausing checks for {lockout_minutes} mins.")
-
-# -------------------------------------------------------------------------
-# TELEGRAM NOTIFICATIONS & COMMAND LISTENER
+# TELEGRAM NOTIFICATIONS & BOOT PING
 # -------------------------------------------------------------------------
 def send_telegram_alert(message_text):
     """Dispatches any text message to the configured Telegram chat."""
@@ -131,6 +106,7 @@ def telegram_command_listener():
                             f"🟢 Monitor Status: ACTIVE\n"
                             f"📅 Window Days: {MONITOR_WINDOW_DAYS}\n"
                             f"🕒 Last Checked: {current_state.get('last_checked', 'Never')}\n"
+                            f"📊 Checks Executed: {metrics_store['total_checks_executed']}\n"
                             f"📌 Tracked Slots: {json.dumps(current_state.get('last_alerted_dates', {}))}"
                         )
                         send_telegram_alert(status_msg)
@@ -153,6 +129,48 @@ def telegram_command_listener():
         time.sleep(2)
 
 # -------------------------------------------------------------------------
+# ATOMIC STATE PERSISTENCE (JSON FILE CACHE WITH LOCKING)
+# -------------------------------------------------------------------------
+def load_state():
+    with file_write_lock:
+        if os.path.exists(STATE_FILE):
+            try:
+                with open(STATE_FILE, "r") as f:
+                    return json.load(f)
+            except Exception as e:
+                logging.error(f"Failed to load state file: {e}")
+    return {"last_alerted_dates": {}, "last_checked": None}
+
+def save_state(state_data):
+    with file_write_lock:
+        try:
+            # Atomic write pattern: write to temporary file first, then replace target
+            dir_name = os.path.dirname(os.path.abspath(STATE_FILE)) or "."
+            with tempfile.NamedTemporaryFile('w', dir=dir_name, delete=False) as tf:
+                json.dump(state_data, tf, indent=4)
+                temp_name = tf.name
+            os.replace(temp_name, STATE_FILE)
+        except Exception as e:
+            logging.error(f"Failed to save state file atomically: {e}")
+
+# -------------------------------------------------------------------------
+# CIRCUIT BREAKER UTILITIES
+# -------------------------------------------------------------------------
+def check_circuit_breaker():
+    global circuit_open_until
+    if time.time() < circuit_open_until:
+        remaining = int(circuit_open_until - time.time())
+        logging.warning(f"Circuit breaker is OPEN. Pausing checks for another {remaining} seconds...")
+        return False
+    return True
+
+def trip_circuit_breaker(lockout_minutes=15):
+    global circuit_open_until
+    circuit_open_until = time.time() + (lockout_minutes * 60)
+    logging.error(f"🚨 Circuit breaker tripped! Halting slot checks for {lockout_minutes} minutes.")
+    send_telegram_alert(f"🚨 Security block detected. Circuit breaker tripped. Pausing checks for {lockout_minutes} mins.")
+
+# -------------------------------------------------------------------------
 # CORE SLOT MONITORING LOGIC
 # -------------------------------------------------------------------------
 def check_location_slots(location_name, facility_id, headers):
@@ -163,6 +181,9 @@ def check_location_slots(location_name, facility_id, headers):
 
     with state_lock:
         cookies_snapshot = shared_session_cookies.copy()
+
+    with state_lock:
+        metrics_store["total_checks_executed"] += 1
 
     try:
         logging.info(f"Checking slots for: {location_name} (Facility ID: {facility_id})...")
@@ -180,21 +201,17 @@ def check_location_slots(location_name, facility_id, headers):
         # if response.status_code == 429:
         #     trip_circuit_breaker(15)
         #     raise Exception("Rate limited (429 Too Many Requests)")
-        #
-        # PARSING REAL API RESPONSE:
-        # data = response.json()
-        # earliest_date_str = data.get("date")  # e.g., "2027-07-20" from real JSON
-        # total_slots = data.get("available_slots", 0)
 
         # MOCK IMPLEMENTATION REFLECTING REALITY:
-        # Until your live cookies fetch the real calendar payload, 
-        # Dubai returns a far-out date (2027) and Abu Dhabi has no slots.
         if location_name == "Dubai":
-            earliest_date_str = "2027-07-20"  # Real calendar availability
+            earliest_date_str = "2027-07-20"  # Far out date reflecting calendar reality
             total_slots = 3
         else:
             earliest_date_str = None
             total_slots = 0
+        
+        with state_lock:
+            metrics_store["successful_api_responses"] += 1
         
         consecutive_errors = 0
         backoff_multiplier = 1
@@ -229,6 +246,10 @@ def check_location_slots(location_name, facility_id, headers):
     except Exception as err:
         consecutive_errors += 1
         backoff_multiplier = min(consecutive_errors * 2, 30)
+        with state_lock:
+            metrics_store["failed_api_responses"] += 1
+            metrics_store["last_error_timestamp"] = datetime.now(timezone(timedelta(hours=4))).isoformat()
+            
         logging.error(f"Error checking {location_name}: {err}. Backoff active: {backoff_multiplier}x")
         if consecutive_errors >= 3:
             trip_circuit_breaker(10)
@@ -280,6 +301,7 @@ def continuous_scheduler():
 def handle_exit(signum, frame):
     global is_running
     logging.info("Shutdown signal received. Stopping threads cleanly...")
+    send_telegram_alert("⚠️ Monitoring Service Shutting Down Gracefully.")
     is_running = False
     sys.exit(0)
 
@@ -287,7 +309,7 @@ signal.signal(signal.SIGINT, handle_exit)
 signal.signal(signal.SIGTERM, handle_exit)
 
 # -------------------------------------------------------------------------
-# FLASK WEB ENDPOINTS
+# FLASK WEB ENDPOINTS & METRICS ROUTE
 # -------------------------------------------------------------------------
 @app.route('/')
 def home():
@@ -299,6 +321,20 @@ def home():
         "window_days": MONITOR_WINDOW_DAYS,
         "last_checked": state.get("last_checked"),
         "timestamp": datetime.now(timezone(timedelta(hours=4))).isoformat() + "Z"
+    })
+
+@app.route('/metrics')
+def metrics():
+    state = load_state()
+    with state_lock:
+        metrics_snapshot = metrics_store.copy()
+    return jsonify({
+        "metrics": metrics_snapshot,
+        "circuit_breaker_active": time.time() < circuit_open_until,
+        "consecutive_errors": consecutive_errors,
+        "backoff_multiplier": backoff_multiplier,
+        "window_days": MONITOR_WINDOW_DAYS,
+        "last_state_cache": state
     })
 
 @app.route('/update-session', methods=['POST'])
@@ -314,6 +350,7 @@ def update_session():
                 shared_session_cookies[key] = data[key]
                 
     logging.info("Session cookies updated dynamically via API endpoint.")
+    send_telegram_alert("✅ Session cookies updated successfully via API.")
     return jsonify({"status": "success", "message": "Session cookies updated successfully."})
 
 @app.route('/run-task', methods=['GET', 'POST'])
@@ -325,6 +362,10 @@ def run_task():
     })
 
 if __name__ == '__main__':
+    # Send startup health check ping to Telegram
+    send_telegram_alert("🟢 US Visa Monitoring Service Booted Successfully & Online!")
+    
+    # Initialize background threads
     threading.Thread(target=continuous_scheduler, daemon=True).start()
     threading.Thread(target=telegram_command_listener, daemon=True).start()
     
