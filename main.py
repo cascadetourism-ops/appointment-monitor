@@ -3,7 +3,7 @@ import time
 import threading
 import requests
 from flask import Flask, jsonify
-from datetime import datetime
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 
@@ -36,7 +36,8 @@ def send_telegram_alert(message_text):
 
 def monitor_appointment_dates():
     """
-    Simulates a session request targeting backend scheduling services.
+    Queries the scheduling endpoint and checks if any available slot 
+    falls within the MONITOR_WINDOW_DAYS timeframe.
     """
     target_url = "https://usvisascheduling.com"
     
@@ -55,12 +56,29 @@ def monitor_appointment_dates():
 
     try:
         print(f"[{datetime.now()}] Requesting target scheduling endpoint...")
-        # response = requests.get(target_url, headers=headers, cookies=cookies, timeout=15)
         
-        # Simulated discovery scenario for development checking
-        dummy_found = True 
-        if dummy_found:
-            send_telegram_alert("⚠️ *Slot Found!*\nAn open slot matches your criteria.")
+        # NOTE: Uncomment the line below when making actual requests to the target endpoint.
+        # response = requests.get(target_url, headers=headers, cookies=cookies, timeout=15)
+        # data = response.json()
+        
+        # --- REAL PARSING LOGIC EXAMPLE ---
+        # Assuming the API returns a JSON key like "earliest_date" in "YYYY-MM-DD" format:
+        # earliest_date_str = data.get("earliest_date")
+        
+        # For demonstration (since live endpoint structure varies and requires active auth sessions):
+        earliest_date_str = None  # Change this or connect to real parsed response data
+        
+        if earliest_date_str:
+            slot_date = datetime.strptime(earliest_date_str, "%Y-%m-%d")
+            max_allowed_date = datetime.now() + timedelta(days=MONITOR_WINDOW_DAYS)
+            
+            # Check if the found slot is within your 120-day window
+            if slot_date <= max_allowed_date:
+                send_telegram_alert(f"⚠️ *US Visa Slot Found!*\nAn open slot is available on: {earliest_date_str}")
+            else:
+                print(f"Slot found on {earliest_date_str}, but it is outside your {MONITOR_WINDOW_DAYS}-day window.")
+        else:
+            print("No slots currently available or waiting for valid response data.")
             
     except Exception as err:
         print(f"Error during portal check: {err}")
