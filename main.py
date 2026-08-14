@@ -12,19 +12,18 @@ app = Flask(__name__)
 # -------------------------------------------------------------------------
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "8969681995:AAHZDtwH1nB5ywnLdC2IYL9nu_VlTr0h9YY")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "1655607685")
-MONITOR_WINDOW_DAYS = 700
+MONITOR_WINDOW_DAYS = 120
 
-def send_telegram_alert(location_name, slot_date_str, slot_count=1):
+def send_telegram_alert(location_name, slot_date_str):
     """
-    Dispatches a simplified Telegram notification containing only the location,
-    date, and number of available slots.
+    Dispatches a simplified Telegram notification containing only the location
+    and the calendar date, with no slot counts.
     """
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
     
     message_text = (
         f"📍 {location_name}\n"
-        f"📅 Date: {slot_date_str}\n"
-        f"🔢 Slots: {slot_count}"
+        f"📅 Date: {slot_date_str}"
     )
 
     payload = {
@@ -61,9 +60,8 @@ def check_location_slots(location_name, facility_id, headers, cookies):
         # total_slots = data.get("slot_count", 0)       # e.g., number of available slots
         
         # FOR DEMONSTRATION / MOCKING REAL RESULTS:
-        # Pulls the actual real calendar date (Current Date: August 14, 2026)
         if location_name == "Dubai":
-            earliest_date_str = "2027-07-20"  # The real calendar date slots are available for
+            earliest_date_str = "2027-07-20"
             total_slots = 3
         else:
             # Simulating no slots found for other locations (e.g., Abu Dhabi)
@@ -81,8 +79,7 @@ def check_location_slots(location_name, facility_id, headers, cookies):
             if slot_date <= max_allowed_date:
                 send_telegram_alert(
                     location_name=location_name,
-                    slot_date_str=earliest_date_str,
-                    slot_count=total_slots
+                    slot_date_str=earliest_date_str
                 )
             else:
                 print(f"{location_name}: Slot found on {earliest_date_str}, but it exceeds your {MONITOR_WINDOW_DAYS}-day window.")
