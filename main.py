@@ -14,25 +14,17 @@ TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "8969681995:AAHZDtwH1n
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "1655607685")
 MONITOR_WINDOW_DAYS = 700
 
-def send_telegram_alert(location_name, slot_date_str, slot_count=1, slot_time_str="10:15", visa_type="B1/B2"):
+def send_telegram_alert(location_name, slot_date_str, slot_count=1):
     """
-    Dispatches an instant notification message to your Telegram account 
-    only when valid appointment slots are found.
+    Dispatches a simplified Telegram notification containing only the location,
+    date, and number of available slots.
     """
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
     
-    # Generate explicit UTC+4 timezone offset matching the format (+04:00)
-    uae_tz = timezone(timedelta(hours=4))
-    current_timestamp = datetime.now(uae_tz).isoformat(timespec='seconds')
-    
     message_text = (
-        f"🚨 USA visa appointment detected\n"
         f"📍 {location_name}\n"
         f"📅 Date: {slot_date_str}\n"
-        f"🔢 Slots Available: {slot_count}\n"
-        f"🛂 {visa_type}\n"
-        f"⏰ {slot_time_str}\n"
-        f"🔎 Detected: {current_timestamp}"
+        f"🔢 Slots: {slot_count}"
     )
 
     payload = {
@@ -67,21 +59,15 @@ def check_location_slots(location_name, facility_id, headers, cookies):
         # data = response.json()
         # earliest_date_str = data.get("earliest_date")  # e.g., "2026-08-27"
         # total_slots = data.get("slot_count", 0)       # e.g., number of available slots
-        # appointment_time = data.get("earliest_time", "10:15")
-        # visa_category = data.get("visa_class", "B1/B2")
         
         # FOR DEMONSTRATION / MOCKING REAL RESULTS:
         if location_name == "Dubai":
             earliest_date_str = "2026-08-27"
             total_slots = 3
-            appointment_time = "10:15"
-            visa_category = "B1/B2"
         else:
             # Simulating no slots found for other locations (e.g., Abu Dhabi)
             earliest_date_str = None
             total_slots = 0
-            appointment_time = "10:15"
-            visa_category = "B1/B2"
         
         # Guard condition: ensure both a date exists AND the slot count is strictly greater than 0
         if earliest_date_str and total_slots > 0:
@@ -95,9 +81,7 @@ def check_location_slots(location_name, facility_id, headers, cookies):
                 send_telegram_alert(
                     location_name=location_name,
                     slot_date_str=earliest_date_str,
-                    slot_count=total_slots,
-                    slot_time_str=appointment_time,
-                    visa_type=visa_category
+                    slot_count=total_slots
                 )
             else:
                 print(f"{location_name}: Slot found on {earliest_date_str}, but it exceeds your {MONITOR_WINDOW_DAYS}-day window.")
