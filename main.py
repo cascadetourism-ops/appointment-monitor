@@ -36,7 +36,7 @@ def send_telegram_alert(message_text):
 
 def monitor_appointment_dates():
     # Target URL Endpoint from your US Visa Scheduling session profile
-    target_url = "https://www.usvisascheduling.com"
+    target_url = "https://usvisascheduling.com"
     
     # Exact raw browser headers from your session intercept
     headers = {
@@ -64,13 +64,13 @@ def monitor_appointment_dates():
         'x-requested-with': 'XMLHttpRequest'
     }
 
-    # Live static authorization and validation cookies extracted from your profile
+    # Live static authorization and validation cookies extracted from your latest profile table
     cookies = {
         '__cf_bm': 'ofsN8sEXk3HCOLTsHwjCCc8fujRRbeDI4iC_LBuiu0U-1786711693.180439-1.0.1.1-LQgv0MLw.Ldp_KQ2.fNF4xI75SADuVdvvKMRDl65BMbsAFMcz5nVQTUct17kEoNrQPkHy5VsQiI13V3m9E6fJnYUIX4jSrx1pkfpSkA3tiknYTCbKPLVFpwmJss7JVuV',
         '__cfwaitingroom': 'Chg3cHJxZHZ5S3FUNW12ZnlVenZqdTdBPT0SgAIvcjJLME90MFBWaVBPWlBiS3NCeGNibVFNVFRCSVM4ZTVhdmVuNlN3Q2gxaFpPTTJJVmdYRlh0S3dRdlBBdXFFMkpLeUUwS1FzSzRiSkh4OTNZdENsUzhqT3RQaHpXb0FFdHE3SEZ4dkdzQjdLRTRwL3RiNitqa0U4aHRhWHJwL0dZWldVS3A0NTUxZFlvYW84QVlKL2gwMTBMSUNveDJtN3k5M3gyR0RQL2RkWmpuRmdNWGlQNjM1SE9mMlFXWGJuUmhDNGJmc3BvaDZpWXlFUnRiTHhFZGdrcWxpUUV0WDJuUjdGZk5Vak5tR2gzMFl5Q0p5aFFjSnVubWNwQjA2',
         '__RequestVerificationToken': 'QumOhOZ7PTVeImqIo05lMMlxWEPz5Za_PzBVWu2YsXFbUHg8wC2LRYBVLjua_kAaFib55PCLzpa58Kh-hBo4MOsezMKaI3GMDFAf-qAuacY1',
         '_cfuvid': 'WgAzyCTLqud7A5U_qIP.lmym3kY1fT5HTI_qYb0Lg0A-1786631214.014867-1.0.1.1-gXJ9nxm07r4VKGsACrR9NZ2hEsSa1Yyn.JNPPcWcyn8',
-        '.AspNet.ApplicationCookie': 'RxgqEkpLD-5Vg71v4t2xvT4KPogshs6OSNPXE6m1AYCwfnERIUX7D9ff6TRyz5rJKX5cBppxxz6nGSzJAxYHt8pscIagP5J200gYjphpDAFarmtb6ImLh7uTtWYlcVslvbMkwxQCRZB9Rmr7WOLamQ2epZOJF9vc-D98SE-In0OLYaf-60AZb-NQVJrCS7WBlqkxnPbINYMuczK1mr96nklsSQeRyCo1PEKfz0O0CRLl30befkH4OR1xrk2ZEt8g1yxvE7OjzfglZ1m7sfNnIGZDy3hUsmgtNYwi3dFFb7Zq_k_uhnjA8iQF21GKd4lotS5T0I5lNiGHNUPCJFXE2TcpEyNh4H0gIvXOrvXsX-IlLI10dhDzTpRgQtsjewG5_reh6zKenOkqpeT6l8V4oZc8vT8HXlxnWx-LVHsiATdkvm7mNzqAS6K8sBQZsEAiiX0K6sl_TdEh9IcWrTLwb1fHYeGk1gpNRyOooJYmofcyHOUczldFWuqlmnKQFI6ZJLgHp558sLzPmThxeciCqJXSwTJj8jj3O2H_dlIDXA9hn9qIue5ktzsc4s657oN0pfIKI1OqZOWsNNOLc-yDoBWhT9SxLDmA9yq2KzcX-iY5b0ez2buKRsegrCih1adSKXdOytD2RLxbh4jfXh_UVQwkNmrXa-gbhXP5XZXeG7b9WAqvOv4P2-pMe7JoPBty_vzzT_5kHvezxxH5Xnm_1nhD2sKAN8V4FDiiRFNEQWlnKA4k5dQdgIMyFxLN1VWjIAaC8qCkVONg3SqvGbyPG8G5UcX2YvqLGI9HPcPozhokV1C5x5QauZb8rfRJO3ASeNzvpRtVdVs90405mW6xzW_WeRn07IHHMtt4RnTKrpShkIN1plVuHu0SZ7Y60pdT7TyNesVeRPVLqIVIhbNl520qXl0gL5250eIhb6MFv6gFpnuxu97BZt8kjwXhW1X8Q6D3rFGIJGfzcF7Qg82LQUXuq5PzNl3Y7uWwAV--agZfCe9WM-8Dm48VtUeVzWhoo73LSsSZyeSGxEbueidVHEqMsqS8IrTlNyjmzrfAEx5ECAClRewxHLB7hwUSUh80YGXt_o1yqiN0ZVcwX1m3jMqYfz6WWpw3WE_jd5cymPiAzOMYULTBaSxGKfYS0Ft_gHGq6-9pO8qSYq7ygNkRFDwGh-U_tf4a140IErZPifzg3g6xxHSro44B48XyQjjx4edU3oC8RiRt_7HFV5FXkVu51SPXYNxNXE83mJF2nZ7C7pFOP7NAD1rFT2N9SQCp9yPT-MynxnG3LyZ731yu4STRlqzovsG7m9pch5eSPBGtN0vCG5obAwnMyzpbofqmqf1MJV0BRp2vOg5SFWBNjpEKDwMLzSg2030a51DvSoiYKTILlNULlhhG2NLocArFPJZaRWluU88uh7W9SL97StbrKvOsxIKkKNVyuZ88U2xz3xMtJiASrHSE1_RqY3fMJAweTK0U5oRZxX-Ptgwq-STePbEIZeeJMNswTnd0BFCP75DAGIaLbifIZH3FsKZK_2axNj3TrGHfj6-J8kiGanKrLEAeDmmqiVU_Ug70F7oIqA5oOxeBb-GpON_YoeN2y2RihaW_ik7BNQ1W7pWUghdSSXtomAGuaIexM9vEChSq46yRoaAvfpvswiq5xusu0xo99LHcwcoxO91KvTLv2PYWScKZ4oK_z43lWFphxJ2PpWtTVA-8Xiqr0SJe7phcwgaGy1tavB8REXnafLme07eKAUIXxjWjYGeO6whyaviUZsXVcrktI-vHy69kVKAvNrDvenWq4OtEqmkUx08C0_QfgkT6-25AgTt9w5V0aw0gselSpP3ng9c4nScyTNKedZ1xEmdh4Po7ejFLUypCMu35h-0UYhGWKY_Dwbg8YWwtk6Bn5QR5VG0IAxNXnwqDP-7kxQKsf57UP70mcsvvPh_kPmfx0PNFY0EcFoPjDhQtnZ6cA7JsV9VQhs7D2ubq_JyoAOeS2v5Rg0fV0v27fkp0w6cBV6gWJ2AwwC-iK8oQQTt3sCVwUwO6_CZQFQHMvDJ9bMbEY00HjNM5GPDWxvZMqpakcbmxI-OS46tSLs1EUhKTEmAAr6V0WX7xhQc_K532G3W_jV8n7iNoWn7DgPu_YwgU_bRklQZUngBhl-sQSYqKtmcLF28scKU_1x4KvB5ijSfxBtPGiSWrQt6ZjL8sFXVBkRmS5oRS_tAWGtOjtxhZF7XTRAUfJ-ynk8Lone9ztO4sw5TbiMVWF7JVo-lYo6Dxe6JlRwPNVL9lFD6_C1S9PlwdbIZMiYnuDiNhisLPS1bt9K79OMrkZlR0V_FUtA5WhcTXLZ6rPAP2FktIyGE2RnAWDTa74vFsUmwdcs6eVM0dWCiortXYDspGndDeJHnTtMgK_vzkDJKyBsdb4eENGa0OXZCZcdgcpY6fpEydB_OXQWy08_T4gg3CgwtKpsl0McXbjNuhYqsYDso4NmkE7kPa54SOaK1DS-olg_0LemLPX5h9IISNEtGwa9GmPl8xPtHrpYRmR9yQPmJOKRbO9VJlH8V2Qi9AMkyAkydT2zIO-z55BQNSWzzoHp4KJFt83NDpqwsZAPmIp38U0DMtQ4iZDMWsFhS6BKudvNE8U3JGtozsn0ildDo1pX6LTXoYjJnMBkc2hfhVk05CJAfVdUn2N5C2Hg5BzYF1vW5ogjW1RU5lREA11ei_tI4zH8sHjAMM_DU82SOxCmYbVCh3pQh9MasbJpHlBCGsKKbCtBjAHf_8BW_hlkXcsdDwellVhf2lLtBWut9ZdWdEowYdvo0BKB0JDPmfCHpGVzSEDCi28RGk4mqhgaO-c9MrE7vIXUUw050NUY_QWaHGySwfDD2tS5j88kCBhLnxcOEfsvOnwrAB6ti4Hz3piBT8qf2QQzE3k6KFPXN51e-tJlsHp0i3ETkE5Hd4WhE86Dl6SQ0dqzYtwCXXoAv8yxsi4mQeIm49bdCKW1JnplFYtVXbJIdLHdX1maPXR8FH77bj4ffQCxfqb7p_l3viO2RmXisCaDSX5FTu4dojsHP-u-TN61ho0Z_2OXe3kAFERpuik8-ZuAhaNuontZLcrJ1dlCKUu3l1XazZ7IopmX-fdyVLvrMCWxKLmrozl6CqzqZLIci-o0IIpcexFdRgWC4bgOefvSPzcLNmKIOevv2huud1n9OPld1v7Sdi3RgOcVazrBvkGxN3yZo9ZDl5GQrzRc4dQQv_0Yo3yt7INJ26jUfjojzhUTGgotjTsUqnh2O_tyrlTG_tEz_xxL4VB_Am-gMLzTJbtjqVt40AEKB0JlTIfC3Rryd44LtA99lhQEivuKqNs7NWaa-ai3f6oJNT9iK2m0BKeH48bVVdncSQjZNrYiteL3ZzuwwzjiJRRnq48EMcCv9Htqpf4TlQWO52E-JjJCO3mUL9RhBFKr4IeVnuZrXfv3m3tEHCowpGRs2nH0ennetRCBAOxmtSBnaPv4oKCuCLCiZ8zdopyfBo7lJIMyGVg_nQSuTHGEri8U4GanIxiV7UlW6Zn07dQB_mcuV5ULez78na5q4VMkwDh7FsvJNrS4RrRkiZseIg4mjRBym9XkDfUBQImHBEm7scESb7jcZhj4GJmV_HcsZbJWdo25ylsUP7Pp-WN5eamcvloszrBVlqlDzcB6vnt0aMRSfAv61gzkNi1l9nRg1QfHhkMpvtTWtAk2Z5M-1j9YkOjm4mBHA_N1rtxN-aRC1TlXiwYsqDNjS8_NrncXZvGJnhVbMYbTtDFVnWFtrBzqSJWrCW-LpXUE2DAwlfCJ29RuUkM8mk6-Iz-pvzBLjIWJkmebli85PkA2KqV139EFpNWSl_c2nfflq2X-zfLymWEhVO8w63o_l8HAUFaNM',
+        '.AspNet.ApplicationCookie': 'PmBtPJ78asMK8aouOzrI7C2Tdwq9o5cl9WI8aGwCIDo9x2KgxliiLv-mxaJLMX3uhPrBSLfiGfVNwTokA-PK-nSyv8q_sq23MpX9PoulDunH-gJFCHWs-PWPXDbcO594T9xgc3NmOor415XhTwfPn_EADjojpWELkerI_TduKsKkhWyBCQOBMF5g6GztUzW8xAjlGXqFFbewFnGlauAlZNg4bXn7tYcMO6W8xFTcViXO497kMZWJhdUHmT0v9yEWgu4YTydIGGQCm1x9qAGojXB4MgjjOTWIimgP9h1613Dbz8KswghcEtdbcqDbETqsfpXDq6fbb-yKqUqbD9ByZq2ynuLIV4oZGVkncqyD7Zhn4aq6nyUOSD1-4cHCEGps-1tjkZMpcTefqtyX2ikH_dz9cV4vP1nwaV71Yx8FlwzItf3gxc8GUeP1CsflerhnPNkr6hl7_PZT4sp-MXje__GfOSrDX2kbfuwufwtizXUEU4PC9mRfduR9vNLjGiWBcdxXcHJIUYYscIO4dB1RvpciIwDhBynkGj65z34nOYsVEbSkOezXWcBCqUmpis1w5Xy3A5BjpA-ywl6LS24IEmMgXaJkzUJ7wh3ycaGC0gJr15foMyp-2riJfYQOyKZ5upvlwnKpUXNYl_ZN5j-Orcs09nY7gleYkIfI6NHm4WDCtx2-Wtuk7GSVYJ2JSPuheqeazKk0lLMWZMpvpalLVzKNxxTIqCi9wP-PYRB05xmItTe5OTNjsjoVvIkqr9dScdFGNoclMdtX72A7PJKuYce0nqq_Y37g2NsCS3Ucn1u6KvHjxL9POnQHm6OF05swL4D5LAaMeqQjZCV-GeeDJTix5yqs4MmPBi07FxH5rGvBy9qGDcddn6zJ5GLpxmhD52E7UNi04_7L7qIfA__qFqvxUwm72DC90tsqTrPCk3VIcK4j_-S2WWg1R4bFgE1oTtOvfCto1f3Y6W_nNGA4XvaOux7umren-EQn8PrdnHJZTMbJ_oyvSh-cz9vlG6P5cp6s-1j-S4OrTYA-mLwxVOv9PtS2SrSbi0jrj_zeJQ7JHchmwkIllJoV3qhZj1xhOmiPd7ALHm1WT4jaauKKi3dyZzCGTs3cuFSnkZkusRiFG8AQw019FdR3S0qauuAfoAIQaSE2iEiCGVQDumHqrW8ylrUHLSHx4QD1-X4s-55glcEz0Lub1t7VHHEMU8NDDsf4lrI94esNjU5Me3GtxUuOTHNHnsMrHlPBJBJAoKwwyy1fGjUVx7903SCs5m3V93Yako8Sz1NVJYk1otIXFb1xgM0L8YCsvR3v_rnNP41gk_JOw1-hgobGdLEq3ASAbkg1-BLy0BzpOL7nYfjgabW_I-WNWS9WCcrpoJjyhiEN07oxUT2DNtDleMJyia8BcAQ74R5_DoMf24oseFtRddZOvuFfrd8WXMbeLldytcQwiZQwwhFGA0uhkHMyPvVwQ8UWjWear7Me9LMjoj6l-GGa-PNbQywcmYqBDzZYH2vBC7I9C23slaJuUbul8OSvX7F8Q7npRS3rxFJn94sA8n_skES28fTdOu3z8JbP_X25G5m1LRBQLi8Gsy6Xlff6HiW72fJMRzp433YVE7n0JvffhGGwVYunZQ15m6y-zWUYew5fa2KRKhoy7Qk6taVpuzl4ICu6d1OCo43yNDyzS5HRMnRdXtzHB_odHs0ZWqHI5wHilIEzRCcYdBoCu9ffp9PvgzzEMx4jNrbS3KAZ_UV5mplXfoGAk9DLheGI6qz9RFsDkNMdKoSoD_HeM7_l63Jx_iWLJe8_QZkQ1Q5uy6wQuHAF_YjaC9P8PdFeQz4C1m6TOj7YioxKPS52AF8Yre0gI0yS6R2fqAU7EHRWquOgeGg0Amh4zQ37gx9ztDs5IGvTTwFfW2ezKHFzOBH2Eh3R6tD_fSNRqK1Qy0pFO0zvQDIwictdoFPf88Gnj40xQjKQG8suySyCnAjWmYwdMDALgvDCL0IFSG4MHutBsc6iiICgd_e4Ge51j_ntk0hQkemo8T3vJeUEuzj1dlgQhtU_TwMoeiyD9qAbzkJnQBx21FpbMJ2t40poDTgclSJ306CcWyPUN-ouMSkD_FKtkR_RHZEu90e6x-fPIKgvODbscaioPy2uNL6w7lxhqjPoAAcjjfpjmHuUXkD7NFtK6Tioaz4vMOYe5Sumq8ZjYFgGhoHM7nwJc_cZiIvkl8zIL_voCp1vKIq-wytJrdlFP_u21bAKR69LPMz4q4-EoMEHcAJVNPp86KepdaTAXL77cWQJkROi0NE7v9SpnSMchHyMDseBMoJ-_XGTkuQrWCAkR2rlXTmL40GQR-oBhoZTTXusgyWaOqEjm0crERR2HtwvmxVYft77I6igXvPit7iucaIb-cebp56aQvSY2o0kBm7Q3nA6JUS1jG8gOyghJWw1-OG3VvnOI3t_bFNcC4l6GnK-1sDo3a-EVze4Fn7zLFQRbAVtvmx99ywdNs9xx1LScc8ozZcgMWT23eYsNqe2hELRN2oosQ_VjriF0rrVUYv3mBH-Ti_qH7hdTuVJy9Mf9r71PoSroTegx7YVUhuRzA2e7lBgeMGgVGibbmlPAV21FujD95gDrnD9l9NvKWYUDsXkZkIkxWPkV6phwLOLFulS7PkTxZ2ii43L74oL0HYCmQWxAhZbTNNXD5atvZ7Ay7HTZQWzcnkeucRHyTu_d2gdVjPxc603VjQGiACmLq4olgNzFnDmhHbqNtvrwGcpZwrtNwJDS6MzUKA4rN6qZIAhKAhbSA9cIrDPNzkjwgFtOyZCZHF14Ton4exL6dg_u7XQzPUZk9rm9BhRBpuguPe2pQ-9l-_IWqOC7sYDXsDA34065JqKVWqiSWFpfwm2Lt2Y5UEoHogrjxHxmS66bM9ZVIfdJgHGwb6ZIzmqAUxlLZovLXlSmmwygR8bJ4Is9knE6k78AVxcTRpd2LBGBmUbiAo8IyC9mF-7sOTWAfEp4jYoIXjMH0zHtfF0en1ZhTHamX9SFJIVtKeBZE5wG5j8sSFquL662ZcTZS9uZzCve3QZldMRK9W5cxhCDJFiZY9dLGEpM9LL3c4LsJ6m0I-5nKDMKZnNhfSCltIhdgbWl2Vq9qeLqY3B9g1PXqTSsPN9r28jSEj4eV55_oBdiz1hveOJty54K27b7Nu1YZOsN1fgDbqK96oT2PVd_opwJQQwqGdnIrjeoR3OOJnRQ2ylVH18FFskNXcjqGDygLMSKduny0pZUD_Z3AMxXj1EHjmxlVu2cXelc8_G8mC3DtsMKhzJswbDGY_fSGRHAmuyHTn0-axZuLR98fDByOwcdhmTP8eH-TTuR2ZL80p3tcGOgUOOGa5JoW7kak0mEyyejy1wv3ueA1io347-LTsXuTW6Ef0J8ZQMEMLJ4I5YmpzUXiJxMp3cmWZWiyhSKcEjsNpQb3mTf-MgJw4KyJk_UFi5jfS0iKjkX_fUgpfWMhVAFyjN6ZQLfKde_EfZW3ZJ7Fz3l02ITDQIU3E1LTD8kPoHq_dxLm2eyPPo7e7Bh7O401T-cPZGsjqlfSzOK6_O9zrYOiyeW4k83aJyOAqZjCAbrHU_hYQdobq8gmM6NsrMrQjxso9CCqOuRCwmxFTVxAGzJ0fN2tZ0e4fdXb_iIJ2rmnFyaXsHq30E_k5m27ilhmkqRlm6iuazYGCiMaqSYBTzLSBmM-uiQAhM7PGsOgUOH7MjNyT-AP8sV_5s--0ISvi8ny2bSFtKeKG0XhPfdlikD8LeuohE7ajDjwh2lzF46B9bD2RW1m4PkgKge_KPArHjHQWNQCG9SWIuxBnPgYZ1-42E5Xs_oDRy5BpMSheoG2L3g8FOEM8BYirYZPULAbj57oXJqb8byNyRvE9wYDsTPQyOegtjJ4xe',
         'ai_session': 'EHwzpxMgMysvNno0tcghEI|1786711692959|1786712190915',
         'ai_user': '594HVDlaap7MiF4y9x08uF|2026-08-11T08:48:28.850Z',
         'ARRAffinity': 'b7371a6831ef0d944ef98bbd9fb45206975ead8f1baca8968729b1c19e2ef33b',
@@ -90,71 +90,79 @@ def monitor_appointment_dates():
 
     # URL-encoded query body data from your session profile
     payload_data = {
-        'parameters': '{"primaryId":"6495c89e-4312-f111-bb46-001dd80aa47d","applications":["6495c89e-4312-f111-bb46-001dd80aa47d","53a41f5f-4412-f111-bb46-001dd80aa47d"],"scheduleDayId":"","scheduleEntryId":"","postId":"962fd063-ccb5-ef11-b8e9-001dd80637a9","isReschedule":"true"}'
-    }
+    'parameters': '{"primaryId":"6495c89e-4312-f111-bb46-001dd80aa47d","applications":["6495c89e-4312-f111-bb46-001dd80aa47d","53a41f5f-4412-f111-bb46-001dd80aa47d"],"scheduleDayId":"","scheduleEntryId":"","postId":"962fd063-ccb5-ef11-b8e9-001dd80637a9","isReschedule":"true"}'
+}
 
-    # -------------------------------------------------------------------------
-    # DYNAMIC TIMELINE CALCULATIONS (Exactly 120 Days)
-    # -------------------------------------------------------------------------
-    print("Executing automated rolling interval calculations...")
-    start_bound = datetime.utcnow()
-    end_bound = start_bound + timedelta(days=MONITOR_WINDOW_DAYS)
+# -------------------------------------------------------------------------
+# RESIDENTIAL PROXY ROUTING OVERLAY (From Webshare Credentials)
+# -------------------------------------------------------------------------
+proxy_address = "http://jfghpzqq-rotate:cfrlfownvclw@p.webshare.io:80"
+proxy_dictionary = {
+    "http": proxy_address,
+    "https": proxy_address
+}
+
+# -------------------------------------------------------------------------
+# DYNAMIC TIMELINE CALCULATIONS (Exactly 120 Days)
+# -------------------------------------------------------------------------
+print("Executing automated rolling interval calculations...")
+start_bound = datetime.utcnow()
+end_bound = start_bound + timedelta(days=MONITOR_WINDOW_DAYS)
+
+start_date_str = start_bound.strftime("%Y-%m-%d")
+end_date_str = end_bound.strftime("%Y-%m-%d")
+print(f"Dynamic tracking window range calculated: {start_date_str} to {end_date_str}")
+
+try:
+    print("Pinging US Visa Scheduling API through Webshare Residential Proxy...")
+    response = requests.post(target_url, headers=headers, cookies=cookies, data=payload_data, proxies=proxy_dictionary, timeout=25)
     
-    start_date_str = start_bound.strftime("%Y-%m-%d")
-    end_date_str = end_bound.strftime("%Y-%m-%d")
-    print(f"Dynamic tracking window range calculated: {start_date_str} to {end_date_str}")
-
-    try:
-        print("Pinging US Visa Scheduling API calendar grid...")
-        # Send the POST request containing your exact payload and session cookies
-        response = requests.post(target_url, headers=headers, cookies=cookies, data=payload_data, timeout=20)
+    if response.status_code == 200:
+        data = response.json()
+        days_list = data.get("ScheduleDays", [])
         
-        if response.status_code == 200:
-            data = response.json()
-            days_list = data.get("ScheduleDays", [])
-            
-            if days_list is None:
-                print("Server returned an empty schedule dashboard frame (ScheduleDays is null).")
-                return True, "No days active."
+        if days_list is None:
+            print("Server returned an empty schedule dashboard frame (ScheduleDays is null).")
+            return True, "No days active."
 
-            # Extract date values from target tracking dictionaries
-            raw_dates = [day.get("Date") for day in days_list if day.get("Date") is not None]
-            print(f"Total calendar days returned by server dashboard: {raw_dates}")
-            
-            # Filter array loop checking for elements inside your 120-day timeframe
-            matched_dates = []
-            for date_text in raw_dates:
-                try:
-                    # Parse standard US Visa string format (YYYY-MM-DD)
-                    current_date = datetime.strptime(date_text, "%Y-%m-%d")
-                    if start_bound.date() <= current_date.date() <= end_bound.date():
-                        matched_dates.append(date_text)
-                except ValueError:
-                    print(f"Skipping mismatched string format conversion: {date_text}")
-            
-            # -----------------------------------------------------------------
-            # TIMELINE NOTIFICATION TRIGGERS
-            # -----------------------------------------------------------------
-            if len(matched_dates) > 0:
-                print(f"🚨 TARGET ENUMERATION MATCH: Found {len(matched_dates)} open appointments!")
-                alert_msg = f"🎉 *US Visa Appointment Dates Available!*\n\n"
-                alert_msg += f"Tracking Target Range: `{start_date_str}` to `{end_date_str}`\n\n"
-                alert_msg += "Open visa scheduling dates detected:\n"
-                for date in matched_dates:
-                    alert_msg += f"📅 *{date}*\n"
-                alert_msg += "\nLog into usvisascheduling.com immediately to secure your spot!"
-                send_telegram_alert(alert_msg)
-                return True, f"Alerted for dates: {matched_dates}"
-            else:
-                print("Scan completed. No calendar availability matches your 120-day limit.")
-                return True, "No dates available inside range."
+        # Extract date values from target tracking dictionaries
+        raw_dates = [day.get("Date") for day in days_list if day.get("Date") is not None]
+        print(f"Total calendar days returned by server dashboard: {raw_dates}")
+        
+        # Filter array loop checking for elements inside your 120-day timeframe
+        matched_dates = []
+        for date_text in raw_dates:
+            try:
+                # Parse standard US Visa string format (YYYY-MM-DD)
+                current_date = datetime.strptime(date_text, "%Y-%m-%d")
+                if start_bound.date() <= current_date.date() <= end_bound.date():
+                    matched_dates.append(date_text)
+            except ValueError:
+                print(f"Skipping mismatched string format conversion: {date_text}")
+        
+        # -----------------------------------------------------------------
+        # TIMELINE NOTIFICATION TRIGGERS
+        # -----------------------------------------------------------------
+        if len(matched_dates) > 0:
+            print(f"🚨 TARGET ENUMERATION MATCH: Found {len(matched_dates)} open appointments!")
+            alert_msg = f"🎉 *US Visa Appointment Dates Available!*\n\n"
+            alert_msg += f"Tracking Target Range: `{start_date_str}` to `{end_date_str}`\n\n"
+            alert_msg += "Open visa scheduling dates detected:\n"
+            for date in matched_dates:
+                alert_msg += f"📅 *{date}*\n"
+            alert_msg += "\nLog into usvisascheduling.com immediately to secure your spot!"
+            send_telegram_alert(alert_msg)
+            return True, f"Alerted for dates: {matched_dates}"
         else:
-            print(f"US Visa server returned an unhandled error state code: {response.status_code}")
-            return False, f"Server Error {response.status_code}"
-            
-    except Exception as e:
-        print(f"Error handling live data transmission loop: {e}")
-        return False, str(e)
+            print("Scan completed. No calendar availability matches your 120-day limit.")
+            return True, "No dates available inside range."
+    else:
+        print(f"US Visa server returned an unhandled error state code: {response.status_code}")
+        return False, f"Server Error {response.status_code}"
+        
+except Exception as e:
+    print(f"Error handling live data transmission loop: {e}")
+    return False, str(e)
 
 @app.route("/run-booking", methods=["POST"])
 def trigger_endpoint():
