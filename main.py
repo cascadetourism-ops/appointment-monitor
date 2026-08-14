@@ -35,34 +35,36 @@ def send_telegram_alert(message_text):
 
 def check_location_slots(location_name, facility_id, headers, cookies):
     """
-    Queries a specific consular location using your active account session cookies 
-    by updating the facility parameter and parsing the returned dates.
+    Queries a specific consular location using active session cookies 
+    and parses the live response to evaluate available appointment windows.
     """
     target_url = "https://usvisascheduling.com"
     
     try:
         print(f"[{datetime.now()}] Checking slots for: {location_name} (Facility ID: {facility_id})...")
         
-        # NOTE: When making live calls, uncomment below and adjust payload/parameters as needed:
+        # -----------------------------------------------------------------
+        # LIVE API REQUEST IMPLEMENTATION
+        # Uncomment below when routing live requests with active session cookies
+        # -----------------------------------------------------------------
         # payload = {"facility_id": facility_id}
         # response = requests.post(target_url, headers=headers, cookies=cookies, data=payload, timeout=15)
         # data = response.json()
+        
+        # Extract the date string from the JSON response dictionary 
+        # (Update key name e.g., "earliest_date" or "date" based on exact API response format)
         # earliest_date_str = data.get("earliest_date")
         
-        # -----------------------------------------------------------------
-        # PARSED DATA EXTRACTION
-        # Replace the simulation string below with your actual API response variable 
-        # e.g., earliest_date_str = data.get("earliest_date")
-        # -----------------------------------------------------------------
-        earliest_date_str = None  # Change to parsed data string when live
+        # Currently set to None. Change or parse dynamically from your live `data` response object:
+        earliest_date_str = None 
         
         if earliest_date_str:
             slot_date = datetime.strptime(earliest_date_str, "%Y-%m-%d")
             max_allowed_date = datetime.now() + timedelta(days=MONITOR_WINDOW_DAYS)
             
-            print(f"Found slot date: {slot_date.strftime('%Y-%m-%d')} (Max allowed: {max_allowed_date.strftime('%Y-%m-%d')})")
+            print(f"Found slot: {slot_date.strftime('%Y-%m-%d')} | Max window threshold: {max_allowed_date.strftime('%Y-%m-%d')}")
 
-            # Check if the found slot is within your 700-day window
+            # Check if the found slot falls within your 700-day window
             if slot_date <= max_allowed_date:
                 send_telegram_alert(f"🇦🇪 *{location_name} Visa Slot Found!*\nAn open slot is available on: *{earliest_date_str}*")
             else:
@@ -75,7 +77,7 @@ def check_location_slots(location_name, facility_id, headers, cookies):
 
 def monitor_appointment_dates():
     """
-    Iterates through both Abu Dhabi and Dubai using the exact same session credentials.
+    Iterates through both Abu Dhabi and Dubai using the shared session credentials.
     """
     headers = {
         'accept': 'application/json, text/javascript, */*; q=0.01',
@@ -105,7 +107,7 @@ def monitor_appointment_dates():
             headers=headers,
             cookies=shared_session_cookies
         )
-        # Brief pause between checking locations to mimic human pacing and prevent rate-limiting
+        # Brief pause between checking locations to prevent rate-limiting
         time.sleep(3)
 
 def continuous_scheduler():
