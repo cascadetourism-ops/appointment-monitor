@@ -125,7 +125,7 @@ def continuous_scheduler():
     print("Background Monitoring Thread Initialized for UAE (Abu Dhabi & Dubai).")
     while True:
         monitor_appointment_dates()
-        time.sleep(600)  # Check every 10 minutes
+        time.sleep(60)  # Check every 1 minute
 
 monitoring_thread = threading.Thread(target=continuous_scheduler, daemon=True)
 monitoring_thread.start()
