@@ -50,16 +50,27 @@ circuit_open_until = 0
 is_running = True
 
 # -------------------------------------------------------------------------
-# PERSISTENT STATE MANAGEMENT (JSON FILE CACHE)
+# PERSISTENT STATE MANAGEMENT (JSON FILE CACHE WITH AUTO-RECOVERY)
 # -------------------------------------------------------------------------
 def load_state():
+    default_state = {"last_alerted_dates": {}, "last_checked": None}
     if os.path.exists(STATE_FILE):
         try:
+            # Check if file is empty (0 bytes) to prevent JSONDecodeError
+            if os.path.getsize(STATE_FILE) == 0:
+                logging.warning("State file is empty. Initializing default state.")
+                save_state(default_state)
+                return default_state
+                
             with open(STATE_FILE, "r") as f:
                 return json.load(f)
+        except json.JSONDecodeError:
+            logging.error("State file was corrupted or malformed. Resetting state.")
+            save_state(default_state)
+            return default_state
         except Exception as e:
             logging.error(f"Failed to load state file: {e}")
-    return {"last_alerted_dates": {}, "last_checked": None}
+    return default_state
 
 def save_state(state_data):
     try:
@@ -173,7 +184,6 @@ def check_location_slots(location_name, facility_id, headers):
         # target_url = "https://usvisascheduling.com/api/slots"
         # response = requests.post(target_url, headers=headers, cookies=cookies_snapshot, data={"facility_id": facility_id}, timeout=15)
         #
-        # # Suggestion Implemented: Session Expiration & Block Detection
         # if response.status_code in [401, 403] or "login" in response.url.lower():
         #     send_telegram_alert("⚠️ CRITICAL: Session cookies have expired or been blocked! Update required via /update-session.")
         #     trip_circuit_breaker(30)
@@ -265,11 +275,11 @@ def continuous_scheduler():
         # Execute concurrent facility checks
         monitor_appointment_dates()
         
-        # Suggestion Implemented: Anti-bot Jitter (Adds ±2 seconds of organic variance)
+        # Anti-bot Jitter (Adds ±2 seconds of organic variance)
         jitter = random.uniform(-2, 2)
         target_sleep = max(2, POLL_INTERVAL_BASE + jitter) * backoff_multiplier
         
-        # Suggestion Implemented: Drift Correction (Subtracts execution time to keep cadence sharp)
+        # Drift Correction (Subtracts execution time to keep cadence sharp)
         elapsed = time.time() - loop_start
         sleep_duration = max(0, target_sleep - elapsed)
         
