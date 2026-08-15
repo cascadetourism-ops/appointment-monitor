@@ -21,6 +21,7 @@ def check_abu_dhabi():
     """Simulates checking Abu Dhabi slots. Replace with your actual API/Selenium logic."""
     logging.info("Checking slots for: Abu Dhabi (Facility ID: abu_dhabi_code_here)...")
     # TODO: Implement your actual fetching logic here
+    logging.info("No valid appointment slots found for Abu Dhabi.")
     return None
 
 def check_dubai():
@@ -48,6 +49,8 @@ def main_loop():
     logging.info("Starting continuous visa slot checking script (every 10 seconds)...")
     
     while True:
+        loop_start = time.time()
+        
         try:
             # Execute checks for facilities safely
             check_abu_dhabi()
@@ -57,8 +60,10 @@ def main_loop():
             # Catch-all for any unexpected anomalies or network errors to prevent script crashes
             logging.critical(f"An unexpected error occurred: {err}", exc_info=True)
             
-        # Wait 10 seconds before the next iteration
-        time.sleep(CHECK_INTERVAL_SECONDS)
+        # Calculate elapsed time to ensure exact 10-second spacing regardless of how long checks take
+        elapsed = time.time() - loop_start
+        sleep_time = max(0, CHECK_INTERVAL_SECONDS - elapsed)
+        time.sleep(sleep_time)
 
 if __name__ == "__main__":
     try:
